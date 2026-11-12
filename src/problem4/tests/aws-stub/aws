@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Fake AWS CLI for offline tests. Logs every call to $STUB_DIR/calls.log.
+# `ssm send-command` simulates the SSM agent: it runs the AWS-RunShellScript `commands` payload locally under sh
+# (so the real host script runs against the local Docker daemon) and stores its status and output.
+set -u
+STUB_DIR="${STUB_DIR:?}"
+echo "aws $*" >>"$STUB_DIR/calls.log"
+
+arg_after() { local key="$1"; shift; while (($#)); do [[ "$1" == "$key" ]] && { echo "$2"; return; }; shift; done; }
+
+case "$1 $2" in
+  "ssm send-command")
+    arg_after --parameters "$@" >"$STUB_DIR/params.json"
+    jq -r '.commands[]' "$STUB_DIR/params.json" >"$STUB_DIR/ssm-script.sh"
+    if sh "$STUB_DIR/ssm-script.sh" >"$STUB_DIR/stdout" 2>"$STUB_DIR/stderr"; then
+      echo Success >"$STUB_DIR/status"
+    else
+      echo Failed >"$STUB_DIR/status"
+    fi
+    echo "stub-command-id"
+    ;;
+  "ssm get-command-invocation")
+    case "$(arg_after --query "$@")" in
+      Status) cat "$STUB_DIR/status" ;;
+      StandardOutputContent) cat "$STUB_DIR/stdout" ;;
+      StandardErrorContent) cat "$STUB_DIR/stderr" ;;
+    esac
+    ;;
+  "cloudfront create-invalidation") echo "STUBINVALIDATION" ;;
+  *) : ;; # s3 sync / s3 cp / cloudfront wait: logged only
+esac

@@ -1,0 +1,252 @@
+# Frontend static SPA → S3 + CloudFront
+#
+# Flow: PR checks → (merge to main) build ONCE, record a checksum, upload the artifact
+#       → dev → staging → production, publishing the SAME artifact. Only config.json differs per environment.
+# Staging and production pause on their GitHub Environment protection rules (required reviewers = tech lead).
+# Rollback / redeploy: run manually with an environment and the run ID of an earlier successful build on main
+# (artifacts are kept 90 days; copy them to a durable bucket if you need longer rollback windows).
+#
+# Expected repository layout (where this file must live to run):
+#   .github/workflows/frontend.yml
+#   frontend/            package.json (scripts: lint, test, build), package-lock.json; build output in frontend/dist
+#   scripts/deploy-frontend.sh
+#
+# GitHub Environments: dev, staging, production. Variables per environment (no AWS secrets; OIDC is used):
+#   AWS_REGION, AWS_ROLE_ARN, S3_BUCKET, CLOUDFRONT_DISTRIBUTION_ID, SITE_URL, API_BASE_URL
+name: frontend
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - "scripts/deploy-frontend.sh"
+      - ".github/workflows/frontend.yml"
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - "scripts/deploy-frontend.sh"
+      - ".github/workflows/frontend.yml"
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to redeploy or roll back"
+        type: choice
+        options: [dev, staging, production]
+        required: true
+      run_id:
+        description: "Run ID of an earlier successful 'frontend' run on main whose artifact should be deployed"
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  FRONTEND_DIR: frontend
+  BUILD_DIR: dist
+  NODE_VERSION: "20"
+  # Artifact to deploy: this run's build, or the run chosen for a manual redeploy/rollback.
+  SOURCE_RUN_ID: ${{ inputs.run_id || github.run_id }}
+
+jobs:
+  build:
+    name: Lint, test, build
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: ${{ env.FRONTEND_DIR }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: ${{ env.FRONTEND_DIR }}/package-lock.json
+      - run: npm ci
+      - run: npm run lint --if-present
+      - run: npm test
+      - name: Dependency audit (production deps, high+)
+        run: npm audit --omit=dev --audit-level=high
+      - run: npm run build
+      - name: Guard against secrets in the bundle
+        run: |
+          if grep -rEn 'AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----|aws_secret_access_key' "$BUILD_DIR"; then
+            echo "::error::Credential-like string found in the frontend build"; exit 1
+          fi
+      - name: Artifact checksum
+        run: |
+          [ -f "$BUILD_DIR/index.html" ] || { echo "::error::$BUILD_DIR/index.html missing"; exit 1; }
+          checksum="$(cd "$BUILD_DIR" && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1)"
+          echo "$checksum" > "$GITHUB_WORKSPACE/frontend-checksum.txt"
+          { echo '### Frontend release'; echo "- commit: \`$GITHUB_SHA\`"; echo "- checksum: \`$checksum\`"; echo "- run id: \`$GITHUB_RUN_ID\`"; } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'push'
+        with:
+          name: frontend-dist
+          path: |
+            ${{ env.FRONTEND_DIR }}/${{ env.BUILD_DIR }}
+            frontend-checksum.txt
+          retention-days: 90
+          if-no-files-found: error
+
+  deploy-dev:
+    name: Deploy → dev
+    needs: build
+    if: >-
+      !cancelled() && (
+        (github.event_name == 'push' && needs.build.result == 'success') ||
+        (github.event_name == 'workflow_dispatch' && inputs.environment == 'dev')
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: dev
+      url: ${{ vars.SITE_URL }}
+    concurrency:
+      group: frontend-dev
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: release
+          run-id: ${{ env.SOURCE_RUN_ID }}
+          github-token: ${{ github.token }}
+      - name: Verify artifact checksum (same bytes that were tested)
+        id: verify
+        run: |
+          expected="$(cat release/frontend-checksum.txt)"
+          actual="$(cd "release/$FRONTEND_DIR/$BUILD_DIR" && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1)"
+          [ "$expected" = "$actual" ] || { echo "::error::checksum mismatch $expected != $actual"; exit 1; }
+          echo "checksum=$actual" >> "$GITHUB_OUTPUT"
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: Publish to S3 + invalidate CloudFront
+        env:
+          DIST_DIR: release/${{ env.FRONTEND_DIR }}/${{ env.BUILD_DIR }}
+          ENVIRONMENT: dev
+          RELEASE_ID: ${{ steps.verify.outputs.checksum }}
+          S3_BUCKET: ${{ vars.S3_BUCKET }}
+          CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: bash scripts/deploy-frontend.sh
+
+  deploy-staging:
+    name: Deploy → staging
+    needs: [build, deploy-dev]
+    if: >-
+      !cancelled() && (
+        (github.event_name == 'push' && needs.deploy-dev.result == 'success') ||
+        (github.event_name == 'workflow_dispatch' && inputs.environment == 'staging')
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: staging
+      url: ${{ vars.SITE_URL }}
+    concurrency:
+      group: frontend-staging
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: release
+          run-id: ${{ env.SOURCE_RUN_ID }}
+          github-token: ${{ github.token }}
+      - name: Verify artifact checksum (same bytes that were tested)
+        id: verify
+        run: |
+          expected="$(cat release/frontend-checksum.txt)"
+          actual="$(cd "release/$FRONTEND_DIR/$BUILD_DIR" && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1)"
+          [ "$expected" = "$actual" ] || { echo "::error::checksum mismatch $expected != $actual"; exit 1; }
+          echo "checksum=$actual" >> "$GITHUB_OUTPUT"
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: Publish to S3 + invalidate CloudFront
+        env:
+          DIST_DIR: release/${{ env.FRONTEND_DIR }}/${{ env.BUILD_DIR }}
+          ENVIRONMENT: staging
+          RELEASE_ID: ${{ steps.verify.outputs.checksum }}
+          S3_BUCKET: ${{ vars.S3_BUCKET }}
+          CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: bash scripts/deploy-frontend.sh
+
+  deploy-production:
+    name: Deploy → production
+    needs: [build, deploy-staging]
+    if: >-
+      !cancelled() && (
+        (github.event_name == 'push' && needs.deploy-staging.result == 'success') ||
+        (github.event_name == 'workflow_dispatch' && inputs.environment == 'production')
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: ${{ vars.SITE_URL }}
+    concurrency:
+      group: frontend-production
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: release
+          run-id: ${{ env.SOURCE_RUN_ID }}
+          github-token: ${{ github.token }}
+      - name: Verify artifact checksum (same bytes that were tested)
+        id: verify
+        run: |
+          expected="$(cat release/frontend-checksum.txt)"
+          actual="$(cd "release/$FRONTEND_DIR/$BUILD_DIR" && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1)"
+          [ "$expected" = "$actual" ] || { echo "::error::checksum mismatch $expected != $actual"; exit 1; }
+          echo "checksum=$actual" >> "$GITHUB_OUTPUT"
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: Publish to S3 + invalidate CloudFront
+        env:
+          DIST_DIR: release/${{ env.FRONTEND_DIR }}/${{ env.BUILD_DIR }}
+          ENVIRONMENT: production
+          RELEASE_ID: ${{ steps.verify.outputs.checksum }}
+          S3_BUCKET: ${{ vars.S3_BUCKET }}
+          CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: bash scripts/deploy-frontend.sh

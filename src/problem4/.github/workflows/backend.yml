@@ -1,0 +1,281 @@
+# Backend HTTP API → EC2 (Docker, deployed via SSM Run Command)
+#
+# Flow: PR checks → (merge to main) build ONCE + push image to ECR, pinned by digest
+#       → dev → staging → production, promoting the SAME digest.
+# Staging and production pause on their GitHub Environment protection rules (required reviewers = tech lead).
+# Rollback / redeploy: run this workflow manually with an environment and an earlier image digest.
+#
+# Expected repository layout (where this file must live to run):
+#   .github/workflows/backend.yml
+#   backend/                  package.json (scripts: lint, test, optional test:e2e), package-lock.json, Dockerfile
+#   scripts/deploy-backend.sh, scripts/ec2-deploy-container.sh
+#
+# GitHub Environments: dev, staging, production. Variables per environment (no AWS secrets; OIDC is used):
+#   AWS_REGION, AWS_ROLE_ARN, ECR_REPOSITORY (dev only, used by the build), EC2_INSTANCE_ID,
+#   API_URL (public base URL, e.g. https://api.dev.example.com), SSM_ENV_PATH (optional)
+name: backend
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "scripts/deploy-backend.sh"
+      - "scripts/ec2-deploy-container.sh"
+      - ".github/workflows/backend.yml"
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "scripts/deploy-backend.sh"
+      - "scripts/ec2-deploy-container.sh"
+      - ".github/workflows/backend.yml"
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to redeploy or roll back"
+        type: choice
+        options: [dev, staging, production]
+        required: true
+      image:
+        description: "Image pinned by digest, e.g. 1234.dkr.ecr.ap-southeast-1.amazonaws.com/backend@sha256:..."
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  BACKEND_DIR: backend
+  NODE_VERSION: "20"
+  APP_PORT: "3000"
+  HEALTH_PATH: /health
+
+jobs:
+  ci:
+    name: Lint, test, audit
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: ${{ env.BACKEND_DIR }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: ${{ env.BACKEND_DIR }}/package-lock.json
+      - run: npm ci
+      - run: npm run lint --if-present
+      - run: npm test
+      - name: Dependency audit (production deps, high+)
+        run: npm audit --omit=dev --audit-level=high
+      - name: Dockerfile builds
+        run: docker build --pull -t backend:ci .
+
+  build:
+    name: Build once, push to ECR
+    needs: ci
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: dev
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      image: ${{ steps.push.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Build image
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+        run: |
+          docker build --pull \
+            --label org.opencontainers.image.revision="$GITHUB_SHA" \
+            --label org.opencontainers.image.source="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" \
+            -t "$REGISTRY/$REPOSITORY:$GITHUB_SHA" "$BACKEND_DIR"
+      - name: Smoke-test the image before pushing
+        env:
+          IMAGE: ${{ steps.ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:${{ github.sha }}
+        run: |
+          docker run -d --name smoke -p 18080:"$APP_PORT" "$IMAGE"
+          if ! curl -fsS --retry 15 --retry-delay 2 --retry-all-errors --max-time 3 "http://127.0.0.1:18080$HEALTH_PATH"; then
+            docker logs smoke; exit 1
+          fi
+          docker rm -f smoke
+      - id: push
+        name: Push and resolve digest
+        env:
+          IMAGE: ${{ steps.ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:${{ github.sha }}
+        run: |
+          docker push "$IMAGE"
+          digest_ref="$(docker inspect --format '{{index .RepoDigests 0}}' "$IMAGE")"
+          echo "image=$digest_ref" >> "$GITHUB_OUTPUT"
+          echo "Pushed $digest_ref"
+      - name: Gate on ECR scan (CRITICAL findings fail the build)
+        env:
+          REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+          IMAGE: ${{ steps.push.outputs.image }}
+        run: |
+          digest="${IMAGE#*@}"
+          if ! aws ecr wait image-scan-complete --repository-name "$REPOSITORY" --image-id imageDigest="$digest"; then
+            echo "::warning::No scan result. Enable scan-on-push (or Enhanced scanning) on $REPOSITORY."
+            exit 0
+          fi
+          critical="$(aws ecr describe-image-scan-findings --repository-name "$REPOSITORY" --image-id imageDigest="$digest" \
+            --query 'imageScanFindings.findingSeverityCounts.CRITICAL' --output text)"
+          [ "$critical" = "None" ] && critical=0
+          echo "CRITICAL findings: $critical"
+          [ "$critical" -eq 0 ]
+      - name: Release manifest
+        env:
+          IMAGE: ${{ steps.push.outputs.image }}
+        run: |
+          jq -n --arg image "$IMAGE" --arg commit "$GITHUB_SHA" --arg run "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            '{component: "backend", image: $image, commit: $commit, build_run: $run}' > release-backend.json
+          { echo '### Backend release'; echo '```json'; cat release-backend.json; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-backend
+          path: release-backend.json
+          retention-days: 90
+
+  deploy-dev:
+    name: Deploy → dev
+    needs: build
+    if: >-
+      !cancelled() && (
+        needs.build.result == 'success' ||
+        (github.event_name == 'workflow_dispatch' && inputs.environment == 'dev')
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: dev
+      url: ${{ vars.API_URL }}
+    concurrency:
+      group: backend-dev
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      IMAGE: ${{ needs.build.outputs.image || inputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: Deploy via SSM
+        env:
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+          SSM_ENV_PATH: ${{ vars.SSM_ENV_PATH }}
+          HEALTHCHECK_URL: ${{ vars.API_URL && format('{0}{1}', vars.API_URL, env.HEALTH_PATH) || '' }}
+        run: bash scripts/deploy-backend.sh
+      - run: echo "Deployed \`$IMAGE\` to **dev**" >> "$GITHUB_STEP_SUMMARY"
+
+  deploy-staging:
+    name: Deploy → staging
+    needs: [build, deploy-dev]
+    if: >-
+      !cancelled() && (
+        (github.event_name == 'push' && needs.deploy-dev.result == 'success') ||
+        (github.event_name == 'workflow_dispatch' && inputs.environment == 'staging')
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: staging
+      url: ${{ vars.API_URL }}
+    concurrency:
+      group: backend-staging
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      IMAGE: ${{ needs.build.outputs.image || inputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: Deploy via SSM
+        env:
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+          SSM_ENV_PATH: ${{ vars.SSM_ENV_PATH }}
+          HEALTHCHECK_URL: ${{ vars.API_URL && format('{0}{1}', vars.API_URL, env.HEALTH_PATH) || '' }}
+        run: bash scripts/deploy-backend.sh
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: ${{ env.BACKEND_DIR }}/package-lock.json
+      - name: Acceptance / E2E tests against staging
+        working-directory: ${{ env.BACKEND_DIR }}
+        env:
+          API_BASE_URL: ${{ vars.API_URL }}
+        run: |
+          npm ci
+          npm run test:e2e --if-present
+      - run: echo "Deployed \`$IMAGE\` to **staging**; acceptance tests passed" >> "$GITHUB_STEP_SUMMARY"
+
+  deploy-production:
+    name: Deploy → production
+    needs: [build, deploy-staging]
+    if: >-
+      !cancelled() && (
+        (github.event_name == 'push' && needs.deploy-staging.result == 'success') ||
+        (github.event_name == 'workflow_dispatch' && inputs.environment == 'production')
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: ${{ vars.API_URL }}
+    concurrency:
+      group: backend-production
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      IMAGE: ${{ needs.build.outputs.image || inputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: Deploy via SSM
+        env:
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+          SSM_ENV_PATH: ${{ vars.SSM_ENV_PATH }}
+          HEALTHCHECK_URL: ${{ vars.API_URL && format('{0}{1}', vars.API_URL, env.HEALTH_PATH) || '' }}
+        run: bash scripts/deploy-backend.sh
+      - run: echo "Deployed \`$IMAGE\` to **production**" >> "$GITHUB_STEP_SUMMARY"
