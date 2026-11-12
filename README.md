@@ -6,6 +6,16 @@ My answers to the [99Tech DevOps Challenge](https://s5tech.notion.site/DevOps-Ch
 
 ## At a glance
 
+## Challenge instructions (from the challenge page)
+
+1. Submit the application with the solutions attached or linked.
+2. Each problem provides sufficient information to attempt it; note uncertainties and declare assumptions where necessary.
+3. Minimally attempt the problems, even without a working solution.
+ Ignore any text with strike-through.
+4. The challenge is broad and freeform by design; creativity is welcome where constraints are not clear.
+5. Start with the skeletal template in the GitHub repo. The solution must be viewable without pain (unzipping counts as painful).
+
+
 | # | Problem | Full document (PDF) | Summary | Status |
 |---|---|---|---|---|
 | 1 | Building Castle in the Cloud: HA crypto trading platform on AWS | 📄 [View PDF](docs/AWS_Trading_Platform_Dzoan-tran.pdf) · [⬇ Download](https://github.com/Sherlock2019/devopsprojects/raw/main/docs/AWS_Trading_Platform_Dzoan-tran.pdf) | [SOLUTION.md](src/problem1/SOLUTION.md) | ✅ **Complete** (design) |
@@ -16,14 +26,8 @@ My answers to the [99Tech DevOps Challenge](https://s5tech.notion.site/DevOps-Ch
 
 **View PDF** opens the full document in GitHub's viewer; **⬇ Download** saves the file directly.
 
-## Challenge instructions (from the challenge page)
 
-1. Submit the application with the solutions attached or linked.
-2. Each problem provides sufficient information to attempt it; note uncertainties and declare assumptions where necessary.
-3. Minimally attempt the problems, even without a working solution.
-4. Ignore any text with strike-through.
-5. The challenge is broad and freeform by design; creativity is welcome where constraints are not clear.
-6. Start with the skeletal template in the GitHub repo. The solution must be viewable without pain (unzipping counts as painful).
+My full stack solution answers to the challenges  
 
 Mobile app https://100.31.100.157:3510/mobile
 <img width="1341" height="844" alt="image" src="https://github.com/user-attachments/assets/23e95faa-1392-4a87-bef9-120b5559e5bc" />
