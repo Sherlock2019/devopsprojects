@@ -8,13 +8,13 @@ This repo contains my answers to the 99Tech DevOps Challenge. It follows the off
 
 | # | Problem | Full document (PDF) | Summary | Status |
 |---|---|---|---|---|
-| 1 | Building Castle in the Cloud: HA crypto trading platform on AWS | 📄 [AWS_Trading_Platform_Dzoan-tran.pdf](docs/AWS_Trading_Platform_Dzoan-tran.pdf) | [SOLUTION.md](src/problem1/SOLUTION.md) | ✅ **Complete** (design) |
-| 2 | Diagnose Me Doctor: NGINX LB at 99% disk | 📄 [NGINX_Storage_Full_Incident_Report.pdf](docs/NGINX_Storage_Full_Incident_Report.pdf) | [SOLUTION.md](src/problem2/SOLUTION.md) | ✅ **Complete** (method + illustrative worked incident) |
-| 3 | Debugging issues within the system: Docker Compose API | (code: [src/problem3/](src/problem3/)) | [SOLUTION.md](src/problem3/SOLUTION.md) | ✅ **Complete: fixed and tested** |
-| 4 | Ship It Twice: GitHub Actions to EC2 + S3 | 📄 [Developer_Guide_AWS_CICD.pdf](docs/Developer_Guide_AWS_CICD.pdf) | [SOLUTION.md](src/problem4/SOLUTION.md) | ✅ **Complete as code**: workflows + scripts, offline tests 14/14; not run against real AWS |
-| 5 | Fortify the Castle: security for Problem 1 | 📄 [AWS_Trading_Platform_Security_Updated.pdf](docs/AWS_Trading_Platform_Security_Updated.pdf) | [SOLUTION.md](src/problem5/SOLUTION.md) | ✅ **Complete** (design) |
+| 1 | Building Castle in the Cloud: HA crypto trading platform on AWS | 📄 [View PDF](docs/AWS_Trading_Platform_Dzoan-tran.pdf) · [⬇ Download](https://github.com/Sherlock2019/devopsprojects/raw/main/docs/AWS_Trading_Platform_Dzoan-tran.pdf) | [SOLUTION.md](src/problem1/SOLUTION.md) | ✅ **Complete** (design) |
+| 2 | Diagnose Me Doctor: NGINX LB at 99% disk | 📄 [View PDF](docs/NGINX_Storage_Full_Incident_Report.pdf) · [⬇ Download](https://github.com/Sherlock2019/devopsprojects/raw/main/docs/NGINX_Storage_Full_Incident_Report.pdf) | [SOLUTION.md](src/problem2/SOLUTION.md) | ✅ **Complete** (method + illustrative worked incident) |
+| 3 | Debugging issues within the system: Docker Compose API | Code: [src/problem3/](src/problem3/) | [SOLUTION.md](src/problem3/SOLUTION.md) | ✅ **Complete: fixed and tested** |
+| 4 | Ship It Twice: GitHub Actions to EC2 + S3 | 📄 [View PDF](docs/Developer_Guide_AWS_CICD.pdf) · [⬇ Download](https://github.com/Sherlock2019/devopsprojects/raw/main/docs/Developer_Guide_AWS_CICD.pdf) | [SOLUTION.md](src/problem4/SOLUTION.md) | ✅ **Complete as code**: workflows + scripts, offline tests 14/14; not run against real AWS |
+| 5 | Fortify the Castle: security for Problem 1 | 📄 [View PDF](docs/AWS_Trading_Platform_Security_Updated.pdf) · [⬇ Download](https://github.com/Sherlock2019/devopsprojects/raw/main/docs/AWS_Trading_Platform_Security_Updated.pdf) | [SOLUTION.md](src/problem5/SOLUTION.md) | ✅ **Complete** (design) |
 
-The PDFs are the complete documents; GitHub previews them in the browser and each has a download button. The SOLUTION.md files are the Markdown summaries.
+**View PDF** opens the full document in GitHub's built-in viewer. **⬇ Download** saves the file directly. The SOLUTION.md files are Markdown summaries.
 
 ## Architecture and security workflow
 
