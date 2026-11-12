@@ -20,11 +20,13 @@ monitoring https://100.31.100.157:3510/ops.html#grafana
 
 wallet security 
 http://127.0.0.1:3510/ops.html#wallets
-<img width="1901" height="909" alt="image" src="https://github.com/user-attachments/assets/2ada84a0-5174-4df7-bdb9-54d46c8cae1b" />
+<img width="1889" height="905" alt="image" src="https://github.com/user-attachments/assets/d869aa39-5371-4422-8ecf-fddefc9e8db2" />
 
 Defense http://127.0.0.1:3510/ops.html#attack
-DR http://127.0.0.1:3510/ops.html#chaos
+<img width="1878" height="900" alt="image" src="https://github.com/user-attachments/assets/9bf31ba8-e661-4f3b-b3f8-f84f7bec5f1a" />
 
+DR http://127.0.0.1:3510/ops.html#chaos
+<img width="1912" height="899" alt="image" src="https://github.com/user-attachments/assets/b5ff48bb-4bcc-49c1-812f-3f3f9a492ed8" />
 
 ## At a glance
 
