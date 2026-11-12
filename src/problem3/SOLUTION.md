@@ -2,7 +2,9 @@
 
 **Status: complete. Reproduced, fixed and re-tested locally with Docker Compose on 12 Nov 2026.**
 
-> The task statement is in [README.md](README.md). Its heading says "Problem 4", but it sits in the template's `problem3` folder, so I treated it as Problem 3.
+> **Where the task came from.** The challenge page says only "Reference README in Problem 4 repo", and the repository's root README contains only general submission instructions. Searching the starter repository's folders, I found [README.md](README.md) in `src/problem3/`. It is headed **"# Problem 4"** and contains a concrete debugging task (a Docker Compose API that is "unreliable and sometimes inaccessible"). I treated it as the referenced README and followed it. I did not invent a scenario or reuse the Problem 2 NGINX incident.
+>
+> **Question for the recruiter:** "Problem 3 refers to the README in the Problem 4 repository, but the README I found only contains submission instructions. Could you please point me to the specific debugging task? I used `src/problem3/README.md` (headed "Problem 4", the Docker Compose API task). Please confirm whether that is the intended one."
 > The first commit of this repo is the unmodified template, so the exact changes are visible with `git diff $(git rev-list --max-parents=0 HEAD) -- src/problem3`, or by opening the "Problem 3" commit on GitHub.
 
 ## Summary
