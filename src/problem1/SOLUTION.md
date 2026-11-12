@@ -4,7 +4,7 @@
 
 **Status: design complete (architecture, service choices, scaling and cost plan). Nothing is deployed, and the 500 RPS / p99 < 100 ms figures are targets, not measured results.**
 
-Source document: *AWS Trading Platform: Scope of Work* by Dzoan Nguyen Tran, 12 Nov 2026 (see [`docs/`](../../docs/README.md)).
+📄 **Full document:** [AWS_Trading_Platform_Dzoan-tran.pdf](../../docs/AWS_Trading_Platform_Dzoan-tran.pdf) (*AWS Trading Platform: Scope of Work*, Dzoan Nguyen Tran, 12 Nov 2026). This page is a summary.
 
 ---
 
@@ -50,7 +50,11 @@ Source document: *AWS Trading Platform: Scope of Work* by Dzoan Nguyen Tran, 12 
 
 ## 3. Architecture overview
 
-> Redrawn from the application workflow diagram in the source PDF (page 5). The original rendered diagrams (PDF pages 5–6) are in [`docs/`](../../docs/README.md).
+> Original diagrams: PDF pages 5–6. The detailed architecture with the security layers from [Problem 5](../problem5/SOLUTION.md) added:
+>
+> ![AWS Trading Platform: Security, EKS & Recovery](../../docs/diagrams/aws-trading-platform-security-eks-recovery.png)
+>
+> Application workflow, redrawn from PDF page 5:
 
 ```mermaid
 flowchart TB

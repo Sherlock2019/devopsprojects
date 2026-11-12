@@ -26,7 +26,7 @@
 >
 > **Single-repo vs three-repo model:** these workflows implement promotion inside one repo, using **GitHub Environment required reviewers** on `staging` and `production` as the tech-lead gate. The separate staging/production *deploy repositories* with promotion PRs (section 4) are the proposed next step; the same scripts work there unchanged.
 
-Source: *Developer Guide for AWS CI/CD: proposed development, staging and production release process* (see [`docs/`](../../docs/README.md)).
+📄 **Full document:** [Developer_Guide_AWS_CICD.pdf](../../docs/Developer_Guide_AWS_CICD.pdf) (*Developer Guide for AWS CI/CD*).
 
 ---
 

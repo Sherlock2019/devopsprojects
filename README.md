@@ -6,15 +6,27 @@ This repo contains my answers to the 99Tech DevOps Challenge. It follows the off
 
 ## Solutions
 
-| # | Problem | Solution | Status |
-|---|---|---|---|
-| 1 | Building Castle in the Cloud: HA crypto trading platform on AWS | [src/problem1/SOLUTION.md](src/problem1/SOLUTION.md) | ✅ **Complete** (design) |
-| 2 | Diagnose Me Doctor: NGINX LB at 99% disk | [src/problem2/SOLUTION.md](src/problem2/SOLUTION.md) | ✅ **Complete** (method + illustrative worked incident) |
-| 3 | Debugging issues within the system: Docker Compose API | [src/problem3/SOLUTION.md](src/problem3/SOLUTION.md) | ✅ **Complete: fixed and tested** |
-| 4 | Ship It Twice: GitHub Actions to EC2 + S3 | [src/problem4/SOLUTION.md](src/problem4/SOLUTION.md) | ✅ **Complete as code**: workflows + scripts, offline tests 14/14; not run against real AWS |
-| 5 | Fortify the Castle: security for Problem 1 | [src/problem5/SOLUTION.md](src/problem5/SOLUTION.md) | ✅ **Complete** (design) |
+| # | Problem | Full document (PDF) | Summary | Status |
+|---|---|---|---|---|
+| 1 | Building Castle in the Cloud: HA crypto trading platform on AWS | 📄 [AWS_Trading_Platform_Dzoan-tran.pdf](docs/AWS_Trading_Platform_Dzoan-tran.pdf) | [SOLUTION.md](src/problem1/SOLUTION.md) | ✅ **Complete** (design) |
+| 2 | Diagnose Me Doctor: NGINX LB at 99% disk | 📄 [NGINX_Storage_Full_Incident_Report.pdf](docs/NGINX_Storage_Full_Incident_Report.pdf) | [SOLUTION.md](src/problem2/SOLUTION.md) | ✅ **Complete** (method + illustrative worked incident) |
+| 3 | Debugging issues within the system: Docker Compose API | (code: [src/problem3/](src/problem3/)) | [SOLUTION.md](src/problem3/SOLUTION.md) | ✅ **Complete: fixed and tested** |
+| 4 | Ship It Twice: GitHub Actions to EC2 + S3 | 📄 [Developer_Guide_AWS_CICD.pdf](docs/Developer_Guide_AWS_CICD.pdf) | [SOLUTION.md](src/problem4/SOLUTION.md) | ✅ **Complete as code**: workflows + scripts, offline tests 14/14; not run against real AWS |
+| 5 | Fortify the Castle: security for Problem 1 | 📄 [AWS_Trading_Platform_Security_Updated.pdf](docs/AWS_Trading_Platform_Security_Updated.pdf) | [SOLUTION.md](src/problem5/SOLUTION.md) | ✅ **Complete** (design) |
 
-**Diagrams:** Mermaid diagrams render inline in [Problem 1](src/problem1/SOLUTION.md#3-architecture-overview), [Problem 2](src/problem2/SOLUTION.md#3-situation-appraisal-and-dependency-map), [Problem 4](src/problem4/SOLUTION.md#5-pipeline-flow) and [Problem 5](src/problem5/SOLUTION.md#2-updated-architecture-security-changes-marked). Source PDFs are listed in [docs/](docs/README.md).
+The PDFs are the complete documents; GitHub previews them in the browser and each has a download button. The SOLUTION.md files are the Markdown summaries.
+
+## Architecture and security workflow
+
+**AWS Trading Platform: Security, EKS & Recovery** (Problems 1 and 5)
+
+![AWS Trading Platform: Security, EKS & Recovery](docs/diagrams/aws-trading-platform-security-eks-recovery.png)
+
+**Trading Platform: Security Workflow** (Problem 5)
+
+![Trading Platform: Security Workflow](docs/diagrams/trading-platform-security-workflow.png)
+
+More diagrams render inline (Mermaid) in [Problem 1](src/problem1/SOLUTION.md#3-architecture-overview), [Problem 2](src/problem2/SOLUTION.md#3-situation-appraisal-and-dependency-map) and [Problem 4](src/problem4/SOLUTION.md#5-pipeline-flow).
 
 **Workflows:** [backend.yml](src/problem4/.github/workflows/backend.yml) and [frontend.yml](src/problem4/.github/workflows/frontend.yml), with deploy scripts in [src/problem4/scripts/](src/problem4/scripts/). They sit in the template's location, so they are inactive in this repo by design: GitHub only *runs* workflows from the repository-root `.github/workflows/`. The [Problem 4 solution](src/problem4/SOLUTION.md) explains how to drop them into an app repo.
 
@@ -67,7 +79,6 @@ Problems 1, 2 and 5 are design or process documents. There is nothing to execute
 - **Problem 4:** no AWS account was used, so no real deployment was tested. `actionlint`/`shellcheck` were not available in the build environment and should be run before first use. Actions are pinned to major tags; pin them to SHAs for production.
 - **Problem 2:** the brief mentions two production issues, but the material describes one scenario; I didn't invent a second.
 - **Problem 3:** its README is titled "Problem 4" in the template; I treated it as Problem 3 because of its folder.
-- The original PDF documents are listed in [docs/](docs/README.md) and are still to be added.
 
 ---
 

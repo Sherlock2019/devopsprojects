@@ -8,7 +8,9 @@
 >
 > **Ambiguity noted:** my brief mentions "two production issues", but the material available to me describes one scenario. I have not invented a second incident; section 6 covers the full set of plausible causes instead.
 
-Method: Kepner-Tregoe (KT) situation appraisal → problem analysis (IS / IS NOT) → decision and recovery. Source: *Production Incident Report for NGINX Disk Exhaustion* (see [`docs/`](../../docs/README.md)).
+📄 **Full document:** [NGINX_Storage_Full_Incident_Report.pdf](../../docs/NGINX_Storage_Full_Incident_Report.pdf). This page is a summary.
+
+Method: Kepner-Tregoe (KT) situation appraisal → problem analysis (IS / IS NOT) → decision and recovery.
 
 ---
 

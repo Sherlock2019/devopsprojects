@@ -1,12 +1,22 @@
 # Source documents
 
-The SOLUTION.md files were written from these documents by the same author. Put the PDFs in this folder so reviewers can download the originals, including the rendered architecture diagrams.
+Full documents for each problem. Click a file to preview it on GitHub, or use the download button.
 
-| File | Used for | In repo? |
+| Problem | Document | Summary |
 |---|---|---|
-| `AWS_Trading_Platform_Dzoan-tran.pdf` | [Problem 1](../src/problem1/SOLUTION.md): architecture, services, scaling, cost (diagrams on pages 5–6) | ⏳ to be added |
-| `NGINX_Storage_Full_Incident_Report.pdf` | [Problem 2](../src/problem2/SOLUTION.md): KT troubleshooting, illustrative incident | ⏳ to be added |
-| `Developer_Guide_AWS_CICD.pdf` | [Problem 4](../src/problem4/SOLUTION.md): CI/CD process | ⏳ to be added |
-| `AWS_Trading_Platform_Security_Updated.pdf` | [Problem 5](../src/problem5/SOLUTION.md): security architecture (diagrams on pages 8–9) | ⏳ to be added |
+| 1 Building Castle in the Cloud | 📄 [AWS_Trading_Platform_Dzoan-tran.pdf](AWS_Trading_Platform_Dzoan-tran.pdf) | [SOLUTION.md](../src/problem1/SOLUTION.md) |
+| 2 Diagnose Me Doctor | 📄 [NGINX_Storage_Full_Incident_Report.pdf](NGINX_Storage_Full_Incident_Report.pdf) | [SOLUTION.md](../src/problem2/SOLUTION.md) |
+| 3 Debugging | (code and report in [src/problem3](../src/problem3/)) | [SOLUTION.md](../src/problem3/SOLUTION.md) |
+| 4 Ship It Twice | 📄 [Developer_Guide_AWS_CICD.pdf](Developer_Guide_AWS_CICD.pdf) | [SOLUTION.md](../src/problem4/SOLUTION.md) |
+| 5 Fortify the Castle | 📄 [AWS_Trading_Platform_Security_Updated.pdf](AWS_Trading_Platform_Security_Updated.pdf) | [SOLUTION.md](../src/problem5/SOLUTION.md) |
 
-The diagrams inside the SOLUTION.md files are Mermaid redraws of the PDF diagrams, so they render directly on GitHub.
+## Diagrams
+
+| Diagram | File |
+|---|---|
+| AWS Trading Platform: Security, EKS & Recovery | [diagrams/aws-trading-platform-security-eks-recovery.png](diagrams/aws-trading-platform-security-eks-recovery.png) |
+| Trading Platform: Security Workflow | [diagrams/trading-platform-security-workflow.png](diagrams/trading-platform-security-workflow.png) |
+
+![AWS Trading Platform: Security, EKS & Recovery](diagrams/aws-trading-platform-security-eks-recovery.png)
+
+![Trading Platform: Security Workflow](diagrams/trading-platform-security-workflow.png)

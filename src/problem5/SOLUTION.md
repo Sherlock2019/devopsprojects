@@ -4,7 +4,7 @@
 
 **Status: design complete. All controls are proposed, not implemented. The MVP uses simulated funds and signing and is not a production custody system.**
 
-Source: *AWS Trading Platform v2: added security features* (see [`docs/`](../../docs/README.md)). Base architecture: [Problem 1](../problem1/SOLUTION.md).
+📄 **Full document:** [AWS_Trading_Platform_Security_Updated.pdf](../../docs/AWS_Trading_Platform_Security_Updated.pdf) (*AWS Trading Platform v2: added security features*). This page is a summary. Base architecture: [Problem 1](../problem1/SOLUTION.md).
 
 **Legend:** 🔒 **MUST** = I would refuse to ship real-money trading without it · ➕ **OPTIONAL** = later enhancement · 🆕 = added to the design · ✏️ = changed in the design · ✅ = risk accepted as-is
 
@@ -19,7 +19,15 @@ Source: *AWS Trading Platform v2: added security features* (see [`docs/`](../../
 
 ## 2. Updated architecture (security changes marked)
 
-> Redrawn from the security workflow diagram in the source PDF (page 8). The original detailed diagram (page 9) is in [`docs/`](../../docs/README.md).
+### Security workflow
+
+![Trading Platform: Security Workflow](../../docs/diagrams/trading-platform-security-workflow.png)
+
+### Detailed AWS architecture with security layers
+
+![AWS Trading Platform: Security, EKS & Recovery](../../docs/diagrams/aws-trading-platform-security-eks-recovery.png)
+
+### Same workflow with each change marked (🆕 added · ✏️ changed)
 
 ```mermaid
 flowchart TB
