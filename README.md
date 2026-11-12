@@ -33,12 +33,12 @@ Mobile app https://100.31.100.157:3510/mobile
 <img width="1341" height="844" alt="image" src="https://github.com/user-attachments/assets/23e95faa-1392-4a87-bef9-120b5559e5bc" />
 
 
-Full Exchange Demo ui is here 
+Full Exchange Demo ui is here main page https://100.31.100.157:3510/
 <img width="1903" height="909" alt="image" src="https://github.com/user-attachments/assets/9fbc5577-4113-4c1a-abdc-e37cc5eacf64" />
 
-main page https://100.31.100.157:3510/
 live architecture : http://127.0.0.1:3510/ops.html#arch 
-devops http://127.0.0.1:3510/ops.html
+<img width="1899" height="882" alt="image" src="https://github.com/user-attachments/assets/5121bb0f-e974-427f-bcbb-69972d445c74" />
+
 monitoring https://100.31.100.157:3510/ops.html#grafana
 <img width="1895" height="901" alt="image" src="https://github.com/user-attachments/assets/8ef675e5-649e-41e3-888d-9c9aa0812bb4" />
 
