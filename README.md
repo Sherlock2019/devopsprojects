@@ -4,6 +4,28 @@
 
 My answers to the [99Tech DevOps Challenge](https://s5tech.notion.site/DevOps-Challenge-19d48905ea77801db898d82997c8f4b2), built on the official skeletal template ([99techteam/devops-challenge](https://github.com/99techteam/devops-challenge)). Everything can be read directly on GitHub, with no ZIP to unpack. Each problem has a full PDF document (view or download) and a Markdown summary.
 
+Mobile app https://100.31.100.157:3510/mobile
+<img width="1341" height="844" alt="image" src="https://github.com/user-attachments/assets/23e95faa-1392-4a87-bef9-120b5559e5bc" />
+
+
+Full Exchange Demo ui is here 
+<img width="1903" height="909" alt="image" src="https://github.com/user-attachments/assets/9fbc5577-4113-4c1a-abdc-e37cc5eacf64" />
+
+main page https://100.31.100.157:3510/
+live architecture : http://127.0.0.1:3510/ops.html#arch 
+devops http://127.0.0.1:3510/ops.html
+monitoring https://100.31.100.157:3510/ops.html#grafana
+<img width="1895" height="901" alt="image" src="https://github.com/user-attachments/assets/8ef675e5-649e-41e3-888d-9c9aa0812bb4" />
+
+
+wallet security 
+http://127.0.0.1:3510/ops.html#wallets
+<img width="1901" height="909" alt="image" src="https://github.com/user-attachments/assets/2ada84a0-5174-4df7-bdb9-54d46c8cae1b" />
+
+Defense http://127.0.0.1:3510/ops.html#attack
+DR http://127.0.0.1:3510/ops.html#chaos
+
+
 ## At a glance
 
 | # | Problem | Full document (PDF) | Summary | Status |
