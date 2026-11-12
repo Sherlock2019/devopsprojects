@@ -4,6 +4,27 @@
 
 My answers to the [99Tech DevOps Challenge](https://s5tech.notion.site/DevOps-Challenge-19d48905ea77801db898d82997c8f4b2), built on the official skeletal template ([99techteam/devops-challenge](https://github.com/99techteam/devops-challenge)). Everything can be read directly on GitHub, with no ZIP to unpack. Each problem has a full PDF document (view or download) and a Markdown summary.
 
+## At a glance
+
+| # | Problem | Full document (PDF) | Summary | Status |
+|---|---|---|---|---|
+| 1 | Building Castle in the Cloud: HA crypto trading platform on AWS | 📄 [View PDF](docs/AWS_Trading_Platform_Dzoan-tran.pdf) · [⬇ Download](https://github.com/Sherlock2019/devopsprojects/raw/main/docs/AWS_Trading_Platform_Dzoan-tran.pdf) | [SOLUTION.md](src/problem1/SOLUTION.md) | ✅ **Complete** (design) |
+| 2 | Diagnose Me Doctor: NGINX LB at 99% disk | 📄 [View PDF](docs/NGINX_Storage_Full_Incident_Report.pdf) · [⬇ Download](https://github.com/Sherlock2019/devopsprojects/raw/main/docs/NGINX_Storage_Full_Incident_Report.pdf) | [SOLUTION.md](src/problem2/SOLUTION.md) | ✅ **Complete** (method + illustrative worked incident) |
+| 3 | Debugging issues within system: Docker Compose API | Code: [src/problem3/](src/problem3/) | [SOLUTION.md](src/problem3/SOLUTION.md) | ✅ **Fixed and tested**; task location to be confirmed ([see note](#problem-3-debugging-issues-within-system)) |
+| 4 | Ship It Twice: GitHub Actions to EC2 + S3 | 📄 [View PDF](docs/Developer_Guide_AWS_CICD.pdf) · [⬇ Download](https://github.com/Sherlock2019/devopsprojects/raw/main/docs/Developer_Guide_AWS_CICD.pdf) | [SOLUTION.md](src/problem4/SOLUTION.md) | ✅ **Complete as code**: workflows + scripts, offline tests 14/14; not run against real AWS |
+| 5 | Fortify the Castle: security for Problem 1 | 📄 [View PDF](docs/AWS_Trading_Platform_Security_Updated.pdf) · [⬇ Download](https://github.com/Sherlock2019/devopsprojects/raw/main/docs/AWS_Trading_Platform_Security_Updated.pdf) | [SOLUTION.md](src/problem5/SOLUTION.md) | ✅ **Complete** (design) |
+
+**View PDF** opens the full document in GitHub's viewer; **⬇ Download** saves the file directly.
+
+## Challenge instructions (from the challenge page)
+
+1. Submit the application with the solutions attached or linked.
+2. Each problem provides sufficient information to attempt it; note uncertainties and declare assumptions where necessary.
+3. Minimally attempt the problems, even without a working solution.
+4. Ignore any text with strike-through.
+5. The challenge is broad and freeform by design; creativity is welcome where constraints are not clear.
+6. Start with the skeletal template in the GitHub repo. The solution must be viewable without pain (unzipping counts as painful).
+
 Mobile app https://100.31.100.157:3510/mobile
 <img width="1341" height="844" alt="image" src="https://github.com/user-attachments/assets/23e95faa-1392-4a87-bef9-120b5559e5bc" />
 
@@ -28,26 +49,6 @@ Defense http://127.0.0.1:3510/ops.html#attack
 DR http://127.0.0.1:3510/ops.html#chaos
 <img width="1912" height="899" alt="image" src="https://github.com/user-attachments/assets/b5ff48bb-4bcc-49c1-812f-3f3f9a492ed8" />
 
-## At a glance
-
-| # | Problem | Full document (PDF) | Summary | Status |
-|---|---|---|---|---|
-| 1 | Building Castle in the Cloud: HA crypto trading platform on AWS | 📄 [View PDF](docs/AWS_Trading_Platform_Dzoan-tran.pdf) · [⬇ Download](https://github.com/Sherlock2019/devopsprojects/raw/main/docs/AWS_Trading_Platform_Dzoan-tran.pdf) | [SOLUTION.md](src/problem1/SOLUTION.md) | ✅ **Complete** (design) |
-| 2 | Diagnose Me Doctor: NGINX LB at 99% disk | 📄 [View PDF](docs/NGINX_Storage_Full_Incident_Report.pdf) · [⬇ Download](https://github.com/Sherlock2019/devopsprojects/raw/main/docs/NGINX_Storage_Full_Incident_Report.pdf) | [SOLUTION.md](src/problem2/SOLUTION.md) | ✅ **Complete** (method + illustrative worked incident) |
-| 3 | Debugging issues within system: Docker Compose API | Code: [src/problem3/](src/problem3/) | [SOLUTION.md](src/problem3/SOLUTION.md) | ✅ **Fixed and tested**; task location to be confirmed ([see note](#problem-3-debugging-issues-within-system)) |
-| 4 | Ship It Twice: GitHub Actions to EC2 + S3 | 📄 [View PDF](docs/Developer_Guide_AWS_CICD.pdf) · [⬇ Download](https://github.com/Sherlock2019/devopsprojects/raw/main/docs/Developer_Guide_AWS_CICD.pdf) | [SOLUTION.md](src/problem4/SOLUTION.md) | ✅ **Complete as code**: workflows + scripts, offline tests 14/14; not run against real AWS |
-| 5 | Fortify the Castle: security for Problem 1 | 📄 [View PDF](docs/AWS_Trading_Platform_Security_Updated.pdf) · [⬇ Download](https://github.com/Sherlock2019/devopsprojects/raw/main/docs/AWS_Trading_Platform_Security_Updated.pdf) | [SOLUTION.md](src/problem5/SOLUTION.md) | ✅ **Complete** (design) |
-
-**View PDF** opens the full document in GitHub's viewer; **⬇ Download** saves the file directly.
-
-## Challenge instructions (from the challenge page)
-
-1. Submit the application with the solutions attached or linked.
-2. Each problem provides sufficient information to attempt it; note uncertainties and declare assumptions where necessary.
-3. Minimally attempt the problems, even without a working solution.
-4. Ignore any text with strike-through.
-5. The challenge is broad and freeform by design; creativity is welcome where constraints are not clear.
-6. Start with the skeletal template in the GitHub repo. The solution must be viewable without pain (unzipping counts as painful).
 
 ---
 
